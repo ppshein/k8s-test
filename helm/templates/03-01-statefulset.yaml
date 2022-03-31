@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  annotations:
+    meta.helm.sh/release-name: {{ .Release.Name }}
+    meta.helm.sh/release-namespace: {{ .Release.Name }}
+  name: {{ .Release.Name }}-db
+  namespace: {{ .Values.namespace }}
+spec:
+  serviceName: postgres
+  {{- include "dbreplica" . | nindent 2 }}
+  selector:
+    matchLabels:
+      app: {{ .Values.postgres.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.postgres.name }}
+    spec:
+      containers:
+      - name: {{ .Values.postgres.name }}
+        image: postgres:9.6.24-alpine
+        envFrom:
+          - secretRef:
+              name: {{ .Release.Name }}-secret
+        ports:
+          - containerPort: 5432
+            name: {{ .Values.postgres.name }}
+        volumeMounts:
+          - name: pv-data
+            mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: pv-data
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-pvc

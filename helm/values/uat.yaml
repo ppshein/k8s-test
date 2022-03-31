@@ -1,0 +1,14 @@
+ingress:
+  host: myapp-uat.ppshein.tech
+
+##deployment
+nodeAffinity:
+  require: false
+
+##hpa
+horizontalScaler:
+  required: true
+  minReplicas: 2
+  maxReplicas: 10
+  cpuTarget: 80
+  memoryTarget: 80

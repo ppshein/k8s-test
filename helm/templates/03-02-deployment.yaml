@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    meta.helm.sh/release-name: {{ .Release.Name }}
+    meta.helm.sh/release-namespace: {{ .Release.Name }}
+  name: {{ .Release.Name }}-app
+  namespace: {{ .Values.namespace }}
+spec:
+  {{- include "appreplica" . | nindent 2 }}
+  selector:
+    matchLabels:
+      {{- include "labels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "labels" . | nindent 8 }}
+      annotations:
+          rollme: {{ dateInZone "2006-01-02 15:04:05" .Release.Time  "UTC" | quote }}
+    spec:
+      volumes:
+        - name: {{ .Release.Name }}-secret-volume
+          secret:
+            secretName: {{ .Release.Name }}-secret-config
+      containers:
+        - name: {{ .Release.Name }}
+          image: {{ .Values.container.image }}:{{ .Values.version }}
+          imagePullPolicy: {{ .Values.container.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.container.port }}
+          command: ["sh", "-c", "./TechChallengeApp updatedb && ./TechChallengeApp serve"]
+          livenessProbe:
+            httpGet:
+              path: /healthcheck
+              port: {{ .Values.container.port }}
+              scheme: HTTP
+            initialDelaySeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /healthcheck
+              port: {{ .Values.container.port }}
+              scheme: HTTP
+            initialDelaySeconds: 10
+          {{- include "environment" . | nindent 10 }}
+          volumeMounts:
+          - name: {{ .Release.Name }}-secret-volume
+            mountPath: /conf.toml
+            subPath: conf.toml
+          {{- include "podResources" . | nindent 10 -}}

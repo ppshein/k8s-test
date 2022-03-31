@@ -1,0 +1,5 @@
+ingress:
+  host: myapp-sit.ppshein.tech
+
+nodeAffinity:
+  require: false

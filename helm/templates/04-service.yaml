@@ -1,0 +1,38 @@
+# for application layer
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    meta.helm.sh/release-name: {{ .Release.Name }}
+    meta.helm.sh/release-namespace: {{ .Release.Name }}
+  name: {{ .Release.Name }}-app
+  namespace: {{ .Values.namespace }}
+  labels:
+{{- include "labels" . | nindent 4 }}
+spec:
+  ports:
+    - name: {{ .Release.Name }}
+      port: {{ .Values.container.port }}
+      targetPort: {{ .Values.container.port }}
+  selector:
+{{- include "labels" . | nindent 4 }}
+  type: NodePort
+---
+# for db layer
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    meta.helm.sh/release-name: {{ .Release.Name }}
+    meta.helm.sh/release-namespace: {{ .Release.Name }}
+  name: {{ .Values.postgres.name }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ .Values.postgres.name }}
+spec:
+  ports:
+  - port: 5432
+    name: {{ .Values.postgres.name }}
+  type: NodePort 
+  selector:
+    app: {{ .Values.postgres.name }}

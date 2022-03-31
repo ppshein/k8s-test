@@ -1,0 +1,33 @@
+# especially for db configuration
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ .Release.Name }}-pvc
+  labels:
+{{- include "labels" . | nindent 4 }}
+spec:
+  storageClassName: {{ .Values.postgres.storageClassName }}
+  capacity:
+    storage: {{ .Values.postgres.storage }}
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/mnt/data"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  annotations:
+    meta.helm.sh/release-name: {{ .Release.Name }}
+    meta.helm.sh/release-namespace: {{ .Release.Name }}
+  name: {{ .Release.Name }}-pvc
+  namespace: {{ .Values.namespace }}
+  labels:
+{{- include "labels" . | nindent 4 }}
+spec:
+  storageClassName: {{ .Values.postgres.storageClassName }}
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.postgres.storage }}
