@@ -9,7 +9,7 @@
   .POSITION_PARAMETER ENV
     Environment name
   .EXAMPLE
-    ./apply.sh cds deathstar sit
+    ./apply.sh finance myproject sit
 DOC
 
 # e: immediately exit if error
